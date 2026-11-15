@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brahma SOL — Genesis</title>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --card-border-hover: #fde68a;
+      --card-selected-bg: #fffdf8;
+      --card-selected-border: #d97706;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --primary: #d97706;
+      --primary-hover: #b45309;
+      --primary-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      --primary-glow: rgba(217, 119, 6, 0.22);
+      --accent-gold: #f59e0b;
+      --accent-gold-soft: #fffbeb;
+      --accent-blue: #0284c7;
+      --accent-blue-soft: #f0f9ff;
+      --success: #10b981;
+      --success-soft: #ecfdf5;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 25%, #ffffff 0%, #faf9f5 85%);
+      color: var(--text);
+      font-family: var(--font-sans);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: none;
+    }
+
+    /* Genesis In-App Header Bar */
+    .title-drag-region {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 50;
+    }
+
+    .brand-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .brand-title span.star {
+      color: var(--primary);
+    }
+
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-icon {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+      color: var(--text);
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    /* Main Spatial Stage */
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 48px;
+      gap: 64px;
+      position: relative;
+    }
+
+    /* Left: Companion Presence & Captions */
+    .presence-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 330px;
+      position: relative;
+    }
+
+    .orb-box {
+      width: 280px;
+      height: 280px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    #orbCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 280px;
+    }
+
+    .captions-box {
+      margin-top: 20px;
+      min-height: 85px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .caption-line {
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      font-weight: 450;
+      transition: opacity 0.4s ease;
+    }
+
+    .caption-line.active {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* Right: The User's Turn */
+    .turn-col {
+      width: 430px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .turn-header {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+    }
+
+    .turn-bullet {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .turn-desc {
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+
+    /* Turn Components & Cards */
+    .turn-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .turn-card.selectable {
+      cursor: pointer;
+    }
+
+    .turn-card.selectable:hover {
+      border-color: #cbd5e1;
+      background: #fafafa;
+    }
+
+    .turn-card.active {
+      border-color: var(--card-selected-border);
+      background: var(--card-selected-bg);
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.08);
+    }
+
+    .row-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .badge.success {
+      background: var(--success-soft);
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+    }
+
+    .badge.warning {
+      background: var(--accent-gold-soft);
+      color: var(--primary);
+      border: 1px solid #fde68a;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Buttons */
+    .btn-action {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.32);
+    }
+
+    .btn-action:disabled {
+      background: #e2e8f0;
+      color: var(--text-dim);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--text);
+      border: 1.5px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    /* Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary-gradient);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.25s ease;
+    }
+
+    /* Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #e2e8f0;
+      transition: 0.3s;
+      border-radius: 22px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(16px);
+      background-color: #ffffff;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-bar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 18px 48px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(226, 232, 240, 0.7);
+      background: rgba(255, 255, 255, 0.65);
+    }
+
+    .btn-text {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: color 0.2s ease;
+    }
+
+    .btn-text:hover {
+      color: var(--text);
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .dots {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .dot.active {
+      width: 22px;
+      border-radius: 4px;
+      background: var(--primary);
+    }
+
+    .dot.done {
+      background: #94a3b8;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Genesis In-App Header Bar -->
+  <div class="title-drag-region">
+    <div class="brand-title">
+      <span class="star">✦</span> BRAHMA SOL <span style="opacity:0.4;">·</span> GENESIS ONBOARDING
+    </div>
+    <div class="window-controls">
+      <button id="btnMute" class="btn-icon" title="Toggle Voice Mute">
+        <svg id="iconVolume" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </button>
+      <button id="btnClose" class="btn-icon" title="Return to App">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Spatial Stage -->
+  <div class="stage">
+    
+    <!-- Left: Companion Face & Captions -->
+    <div class="presence-col">
+      <div class="orb-box" id="orbContainer" title="Brahma SOL Embodied Presence">
+        <canvas id="orbCanvas"></canvas>
+      </div>
+      <div class="captions-box">
+        <p class="caption-line active" id="captionText">
+          Greetings, sir. I am Brahma SOL, your sovereign embodied AI companion. Everything we do runs directly on your computer — private, local, and autonomous.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right: The User's Turn (Step View) -->
+    <div class="turn-col" id="turnContainer">
+      <!-- Step Content is dynamically injected here -->
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-bar">
+    <div>
+      <button id="btnBack" class="btn-text">
+        ← Back
+      </button>
+    </div>
+
+    <div class="stepper">
+      <div class="dots" id="stepperDots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <span id="stepCounter">1 of 5</span>
+    </div>
+
+    <div style="text-align: right;">
+      <button id="btnSkip" class="btn-text">
+        Skip all
+      </button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="qwebchannel.js"></script>
+  <script src="ascii_orb.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // Connect Qt WebChannel Bridge
+      let pyBridge = null;
+      if (typeof QWebChannel !== 'undefined') {
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+          pyBridge = channel.objects.pyBridge;
+          console.log('[Genesis] QtWebChannel connected successfully.');
+          if (pyBridge && pyBridge.requestStatus) {
+            pyBridge.requestStatus();
+          }
+        });
+      }
+
+      // Initialize ASCII Orb Engine in App Light Theme
+      const canvas = document.getElementById('orbCanvas');
+      const orb = new window.AsciiOrb(canvas, {
+        size: 280,
+        isDark: false,
+        color: [15, 23, 42]
+      });
+      orb.start();
+
+      // Mouse look-at tracking
+      window.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / (window.innerWidth / 2);
+        const dy = (e.clientY - cy) / (window.innerHeight / 2);
+        orb.setLookAt(dx, dy);
+      });
+
+      // 5-Step Turn Sequence Definitions
+      const STEPS = [
+        {
+          id: 0,
+          caption: "To run completely private without sending your data to external clouds, we run high-performance neural models directly on your hardware via Ollama.",
+          render: renderStep1
+        },
+        {
+          id: 1,
+          caption: "I can listen and speak naturally in real-time. Your desktop microphone is ready for voice commands and hands-free interaction.",
+          render: renderStep2
+        },
+        {
+          id: 2,
+          caption: "I orchestrate specialized autonomous subagents that plan tasks, edit source code, browse the live web, and automate your smart home.",
+          render: renderStep3
+        },
+        {
+          id: 3,
+          caption: "My speech is generated locally using Kokoro 82M with zero cloud latency. Choose your preferred voice style.",
+          render: renderStep4
+        },
+        {
+          id: 4,
+          caption: "All systems are initialized and ready. Whenever you need assistance, I am right here on your computer.",
+          render: renderStep5
+        }
+      ];
+
+      let currentStep = 0;
+      let isMuted = false;
+      let currentOllamaStatus = { installed: false, running: false, models: [] };
+
+      const captionText = document.getElementById('captionText');
+      const turnContainer = document.getElementById('turnContainer');
+      const stepperDots = document.getElementById('stepperDots');
+      const stepCounter = document.getElementById('stepCounter');
+      const btnBack = document.getElementById('btnBack');
+      const btnSkip = document.getElementById('btnSkip');
+      const btnClose = document.getElementById('btnClose');
+      const btnMute = document.getElementById('btnMute');
+
+      function updateStepView() {
+        const step = STEPS[currentStep];
+        captionText.innerText = step.caption;
+        
+        // Trigger speaking modulation on orb
+        orb.setSpeaking(true, 0.75);
+        setTimeout(() => orb.setSpeaking(false), 3800);
+
+        // Tell Python backend to speak aloud if unmuted
+        if (pyBridge && pyBridge.speakScript && !isMuted) {
+          pyBridge.speakScript(step.caption);
+        }
+
+        // Render current step component
+        turnContainer.innerHTML = '';
+        step.render(turnContainer);
+
+        // Update stepper dots & counter
+        stepCounter.innerText = `${currentStep + 1} of ${STEPS.length}`;
+        const dots = stepperDots.querySelectorAll('.dot');
+        dots.forEach((dot, idx) => {
+          dot.className = 'dot';
+          if (idx === currentStep) dot.classList.add('active');
+          else if (idx < currentStep) dot.classList.add('done');
+        });
+
+        btnBack.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+        btnSkip.innerText = currentStep === STEPS.length - 1 ? 'Look around first' : 'Skip all';
+      }
+
+      function goNext() {
+        if (currentStep < STEPS.length - 1) {
+          currentStep++;
+          updateStepView();
+        } else {
+          finishGenesis();
+        }
+      }
+
+      function goBack() {
+        if (currentStep > 0) {
+          currentStep--;
+          updateStepView();
+        }
+      }
+
+      function finishGenesis() {
+        if (pyBridge && pyBridge.completeGenesis) {
+          pyBridge.completeGenesis();
+        } else {
+          console.log('[Genesis] Onboarding completed.');
+        }
+      }
+
+      btnBack.addEventListener('click', goBack);
+      btnSkip.addEventListener('click', finishGenesis);
+      btnClose.addEventListener('click', finishGenesis);
+      btnMute.addEventListener('click', () => {
+        isMuted = !isMuted;
+        btnMute.style.opacity = isMuted ? '0.4' : '1.0';
+        if (pyBridge && pyBridge.setMuted) {
+          pyBridge.setMuted(isMuted);
+        }
+      });
+
+      // =========================================================================
+      // STEP 1: OLLAMA 1-CLICK & LOCAL MODEL PULLER
+      // =========================================================================
+      function renderStep1(container) {
+        container.innerHTML = `
+          <div class="turn-header">
+            <div class="turn-bullet"></div>
+            <span>Prime your local brain</span>
+          </div>
+          <div class="turn-desc">
+            Brahma SOL runs high-performance reasoning locally through Ollama. Fast, private, and unlimited.
+          </div>
+
+          <!-- Ollama Engine Card -->
+          <div class="turn-card" id="cardOllama">
+            <div class="row-between">
+              <div>
+                <div style="font-weight:600; font-size:14px; color:var(--text);">Ollama Daemon</div>
+                <div style="font-size:12px; color:var(--text-muted);" id="ollamaSubtitle">Detecting local installation...</div>
+              </div>
+              <div id="ollamaBadge" class="badge">Checking...</div>
+            </div>
+            
+            <div id="ollamaProgressArea" style="display:none; margin-top:4px;">
+              <div class="row-between" style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">
+                <span id="ollamaProgressText">Downloading OllamaSetup.exe...</span>
+                <span id="ollamaProgressPct">0%</span>
+              </div>
+              <div class="progress-track">
+                <div id="ollamaProgressFill" class="progress-fill"></div>
+              </div>
+            </div>
+
+            <div id="ollamaActionArea" style="margin-top:6px;">
+              <button id="btnDownloadOllama" class="btn-action" style="width:100%;">
+                ↓ One-Click Download & Install Ollama
+              </button>
+            </div>
+          </div>
+
+          <!-- Model Puller Card -->
+          <div class="turn-card" id="cardModel">
+            <div class="row-between">
+              <div>
+                <div style="font-weight:600; font-size:14px; color:var(--text);">Qwen 2.5 (7B Instruct)</div>
+                <div style="font-size:12px; color:var(--text-muted);">Recommended sovereign model · 4.7 GB</div>
+              </div>
+              <div id="modelBadge" class="badge">4.7 GB</div>
+            </div>
+            
+            <div id="modelProgressArea" style="display:none; margin-top:4px;">
+              <div class="row-between" style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">
+                <span id="modelProgressText">Downloading weights...</span>
+                <span id="modelProgressPct">0%</span>
+              </div>
+              <div class="progress-track">
+                <div id="modelProgressFill" class="progress-fill"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:8px;">
+              <button id="btnPullModel" class="btn-secondary" style="width:100%;">
+                ⚡ Download & Set Up Qwen 2.5 7B
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top:8px;">
+            <button id="btnStep1Continue" class="btn-action" style="width:100%;">
+              Continue to Audio Setup →
+            </button>
+          </div>
+        `;
+
+        const btnDownloadOllama = container.querySelector('#btnDownloadOllama');
+        const btnPullModel = container.querySelector('#btnPullModel');
+        const btnStep1Continue = container.querySelector('#btnStep1Continue');
+        const ollamaBadge = container.querySelector('#ollamaBadge');
+        const ollamaSubtitle = container.querySelector('#ollamaSubtitle');
+        const ollamaProgressArea = container.querySelector('#ollamaProgressArea');
+        const modelBadge = container.querySelector('#modelBadge');
+        const modelProgressArea = container.querySelector('#modelProgressArea');
+
+        btnStep1Continue.addEventListener('click', goNext);
+
+        function applyOllamaState(st) {
+          currentOllamaStatus = st;
+          if (st.installed) {
+            ollamaBadge.className = 'badge success';
+            ollamaBadge.innerHTML = '<span class="status-dot"></span> Installed';
+            ollamaSubtitle.innerText = st.running ? 'Daemon active on 127.0.0.1:11434' : 'Installed · Click to start';
+            btnDownloadOllama.innerText = st.running ? '✓ Ollama Engine Operational' : '▶ Start Ollama Daemon';
+            if (st.running) btnDownloadOllama.disabled = true;
+          } else {
+            ollamaBadge.className = 'badge warning';
+            ollamaBadge.innerText = 'Not Found';
+            ollamaSubtitle.innerText = 'Click below to automatically install Windows setup';
+            btnDownloadOllama.innerText = '↓ One-Click Download & Install Ollama';
+            btnDownloadOllama.disabled = false;
+          }
+
+          if (st.models && st.models.some(m => m.includes('qwen2.5:7b') || m.includes('qwen2.5'))) {
+            modelBadge.className = 'badge success';
+            modelBadge.innerHTML = '<span class="status-dot"></span> Ready';
+            btnPullModel.innerText = '✓ Qwen 2.5 7B Connected';
+            btnPullModel.disabled = true;
+          }
+        }
+
+        applyOllamaState(currentOllamaStatus);
+
+        btnDownloadOllama.addEventListener('click', () => {
+          if (currentOllamaStatus.installed && !currentOllamaStatus.running) {
+            btnDownloadOllama.disabled = true;
+            btnDownloadOllama.innerText = 'Starting daemon...';
+            if (pyBridge && pyBridge.startOllama) {
+              pyBridge.startOllama();
+            }
+          } else if (!currentOllamaStatus.installed) {
+            btnDownloadOllama.disabled = true;
+            ollamaProgressArea.style.display = 'block';
+            if (pyBridge && pyBridge.installOllama) {
+              pyBridge.installOllama();
+            }
+          }
+        });
+
+        btnPullModel.addEventListener('click', () => {
+          btnPullModel.disabled = true;
+          modelProgressArea.style.display = 'block';
+          if (pyBridge && pyBridge.pullModel) {
+            pyBridge.pullModel('qwen2.5:7b');
+          }
+        });
+      }
+
+      // =========================================================================
+      // STEP 2: MICROPHONE & AUDIO PERCEPTION
+      // =========================================================================
+      function renderStep2(container) {
+        container.innerHTML = `
+          <div class="turn-header">
+            <div class="turn-bullet"></div>
+            <span>Turn on the microphone</span>
+          </div>
+          <div class="turn-desc">
+            Voice communication allows instant calling, real-time interruptions, and background task delegating.
+          </div>
+
+          <div class="turn-card">
+            <div class="row-between">
+              <span style="font-weight:600; font-size:14px; color:var(--text);">Desktop Microphone</span>
+              <span id="micBadge" class="badge success"><span class="status-dot"></span> Ready</span>
+            </div>
+            <p style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+              Push-to-talk hotkey is active. Say <b>"Hey Brahma"</b> or tap the companion avatar to summon.
+            </p>
+            <div style="display:flex; gap:5px; height:20px; align-items:center; margin-top:6px;">
+              <div style="flex:1; height:4px; background:var(--primary); border-radius:2px;"></div>
+              <div style="flex:1; height:8px; background:var(--primary); border-radius:2px;"></div>
+              <div style="flex:1; height:16px; background:var(--primary); border-radius:2px;"></div>
+              <div style="flex:1; height:10px; background:var(--primary); border-radius:2px;"></div>
+              <div style="flex:1; height:6px; background:var(--primary); border-radius:2px;"></div>
+              <div style="flex:1; height:14px; background:var(--primary); border-radius:2px;"></div>
+              <div style="flex:1; height:4px; background:var(--primary); border-radius:2px;"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:8px;">
+            <button id="btnStep2Continue" class="btn-action" style="width:100%;">
+              Continue to Agents →
+            </button>
+          </div>
+        `;
+        container.querySelector('#btnStep2Continue').addEventListener('click', goNext);
+      }
+
+      // =========================================================================
+      // STEP 3: SUBAGENT ROSTER
+      // =========================================================================
+      function renderStep3(container) {
+        container.innerHTML = `
+          <div class="turn-header">
+            <div class="turn-bullet"></div>
+            <span>Pick who comes along</span>
+          </div>
+          <div class="turn-desc">
+            Brahma SOL delegates long workflows to autonomous subagents that work quietly on your computer.
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="turn-card row-between" style="padding:12px 16px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--text);">🧠 Executive Planner</div>
+                <div style="font-size:11px; color:var(--text-muted);">Breaks complex goals into executable steps</div>
+              </div>
+              <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+
+            <div class="turn-card row-between" style="padding:12px 16px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--text);">💻 Code Engineer</div>
+                <div style="font-size:11px; color:var(--text-muted);">Edits code, runs terminal commands, solves bugs</div>
+              </div>
+              <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+
+            <div class="turn-card row-between" style="padding:12px 16px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--text);">🌐 Web Navigator</div>
+                <div style="font-size:11px; color:var(--text-muted);">Automated browser research and live data retrieval</div>
+              </div>
+              <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+
+            <div class="turn-card row-between" style="padding:12px 16px;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--text);">⚡ Smart Home Hub</div>
+                <div style="font-size:11px; color:var(--text-muted);">Havells, Philips Hue, TP-Link Kasa device control</div>
+              </div>
+              <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+          </div>
+
+          <div style="margin-top:8px;">
+            <button id="btnStep3Continue" class="btn-action" style="width:100%;">
+              Continue to Voice Setup →
+            </button>
+          </div>
+        `;
+        container.querySelector('#btnStep3Continue').addEventListener('click', goNext);
+      }
+
+      // =========================================================================
+      // STEP 4: KOKORO-82M LOCAL NEURAL VOICE
+      // =========================================================================
+      function renderStep4(container) {
+        container.innerHTML = `
+          <div class="turn-header">
+            <div class="turn-bullet"></div>
+            <span>Neural Voice Synthesis</span>
+          </div>
+          <div class="turn-desc">
+            Speech is synthesized 100% locally with Kokoro-82M. No cloud APIs, no bandwidth limits.
+          </div>
+
+          <div class="turn-card selectable active" id="cardEnVoice">
+            <div class="row-between">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--text);">British English · Male</div>
+                <div style="font-size:11px; color:var(--text-muted);">Preferred voice: <code>bm_lewis</code></div>
+              </div>
+              <div class="badge success">Selected</div>
+            </div>
+          </div>
+
+          <div class="turn-card selectable" id="cardHiVoice">
+            <div class="row-between">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--text);">Hindi Devanagari · Male</div>
+                <div style="font-size:11px; color:var(--text-muted);">Preferred voice: <code>hm_omega</code></div>
+              </div>
+              <div class="badge">Optional</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <button id="btnTestVoice" class="btn-secondary" style="flex:1;">
+              ▶ Test Speech (bm_lewis)
+            </button>
+            <button id="btnStep4Continue" class="btn-action" style="flex:1;">
+              Ready →
+            </button>
+          </div>
+        `;
+
+        const btnTestVoice = container.querySelector('#btnTestVoice');
+        const btnStep4Continue = container.querySelector('#btnStep4Continue');
+
+        btnTestVoice.addEventListener('click', () => {
+          orb.setSpeaking(true, 0.8);
+          setTimeout(() => orb.setSpeaking(false), 2800);
+          if (pyBridge && pyBridge.testVoice) {
+            pyBridge.testVoice('bm_lewis');
+          }
+        });
+
+        btnStep4Continue.addEventListener('click', goNext);
+      }
+
+      // =========================================================================
+      // STEP 5: FINAL IGNITION
+      // =========================================================================
+      function renderStep5(container) {
+        container.innerHTML = `
+          <div class="turn-header">
+            <div class="turn-bullet"></div>
+            <span>Awaken Brahma SOL</span>
+          </div>
+          <div class="turn-desc">
+            All sovereign systems are initialized and primed. Your private companion is ready.
+          </div>
+
+          <div class="turn-card" style="background:#fffbeb; border:1.5px solid #fde68a;">
+            <div style="font-weight:600; font-size:14px; color:#b45309;">✦ Full Sovereign OS Connected</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-top:6px;">
+              • Local LLM Engine: <b style="color:var(--text);">Ollama / Qwen 2.5</b><br>
+              • Neural Voice: <b style="color:var(--text);">Kokoro-82M Offline (bm_lewis)</b><br>
+              • Autonomous Subagents: <b style="color:var(--text);">Active</b><br>
+              • IoT Gateway: <b style="color:var(--text);">Havells / Hue / Kasa</b>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <button id="btnLaunchBrahma" class="btn-action" style="width:100%; height:46px; font-size:14px;">
+              ✦ Awaken Brahma SOL
+            </button>
+          </div>
+        `;
+
+        container.querySelector('#btnLaunchBrahma').addEventListener('click', finishGenesis);
+      }
+
+      // Expose navigation for bridge and testing
+      window.setGenesisStep = function(step) {
+        currentStep = Math.max(0, Math.min(STEPS.length - 1, step));
+        updateStepView();
+      };
+      window.nextGenesisStep = goNext;
+
+      // Initial Step Render
+      updateStepView();
+
+      // Global callbacks exposed to Python QWebChannel
+      window.onOllamaStatus = function (rawStatus) {
+        try {
+          const st = typeof rawStatus === 'string' ? JSON.parse(rawStatus) : rawStatus;
+          currentOllamaStatus = st;
+          if (currentStep === 0) {
+            renderStep1(turnContainer);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      window.onOllamaInstallProgress = function (pct, text) {
+        const fill = document.getElementById('ollamaProgressFill');
+        const pctEl = document.getElementById('ollamaProgressPct');
+        const txtEl = document.getElementById('ollamaProgressText');
+        if (fill) fill.style.width = `${pct}%`;
+        if (pctEl) pctEl.innerText = `${pct}%`;
+        if (txtEl && text) txtEl.innerText = text;
+      };
+
+      window.onOllamaInstallFinished = function (success, msg) {
+        const txtEl = document.getElementById('ollamaProgressText');
+        if (txtEl) txtEl.innerText = msg;
+        if (pyBridge && pyBridge.requestStatus) {
+          pyBridge.requestStatus();
+        }
+      };
+
+      window.onModelDownloadProgress = function (pct, text) {
+        const fill = document.getElementById('modelProgressFill');
+        const pctEl = document.getElementById('modelProgressPct');
+        const txtEl = document.getElementById('modelProgressText');
+        if (fill) fill.style.width = `${pct}%`;
+        if (pctEl) pctEl.innerText = `${pct}%`;
+        if (txtEl && text) txtEl.innerText = text;
+      };
+
+      window.onModelDownloadFinished = function (success, msg) {
+        const txtEl = document.getElementById('modelProgressText');
+        if (txtEl) txtEl.innerText = msg;
+        if (pyBridge && pyBridge.requestStatus) {
+          pyBridge.requestStatus();
+        }
+      };
+
+    })();
+  </script>
+</body>
+</html>

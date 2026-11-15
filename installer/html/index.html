@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brahma Sol Setup</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="installer.css">
+  <script src="libs/three.min.js"></script>
+  <script src="libs/GLTFLoader.js"></script>
+  <script src="libs/qwebchannel.js"></script>
+</head>
+<body>
+
+  <!-- ============================================================
+       0. CELESTIAL INSTALLER WINDOW SHELL (WHITE & GOLD CELESTIAL)
+       ============================================================ -->
+  <div id="installer-window">
+    <canvas id="celestial-canvas"></canvas>
+
+    <!-- Window Drag Header Bar -->
+    <header class="window-header">
+      <div class="brand-section">
+        <img src="brahma_sol_logo.png" alt="Brahma Sol" class="brand-sol-badge">
+        <div class="brand-meta">
+          <span class="version-badge">v2.0 SETUP</span>
+          <span class="publisher-meta">by Buildonaut - Suryaansh</span>
+        </div>
+      </div>
+      <div class="window-controls">
+        <button id="win-min" class="win-btn" title="Minimize">—</button>
+        <button id="win-close" class="win-btn close" title="Close">✕</button>
+      </div>
+    </header>
+
+    <!-- Main Installer Body Split -->
+    <main class="installer-body">
+      
+      <!-- ========================================================
+           LEFT COLUMN: INSTALLATION FLOW & WIZARD
+           ======================================================== -->
+      <section class="left-pane">
+        
+        <!-- Step Indicator Ribbon -->
+        <div class="step-ribbon">
+          <div class="ribbon-item active" data-step="1">
+            <div class="ribbon-num">1</div>
+            <span>Welcome</span>
+          </div>
+          <div class="ribbon-divider"></div>
+          <div class="ribbon-item" data-step="2">
+            <div class="ribbon-num">2</div>
+            <span>Location</span>
+          </div>
+          <div class="ribbon-divider"></div>
+          <div class="ribbon-item" data-step="3">
+            <div class="ribbon-num">3</div>
+            <span>Install</span>
+          </div>
+          <div class="ribbon-divider"></div>
+          <div class="ribbon-item" data-step="4">
+            <div class="ribbon-num">4</div>
+            <span>Launch</span>
+          </div>
+        </div>
+
+        <!-- ── STEP 1: WELCOME & INTRO ── -->
+        <div id="step-1" class="step-container active">
+          <div class="step-badge">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span>Embodied 3D Companion</span>
+          </div>
+          <h1 class="step-title">Welcome to Brahma Sol</h1>
+          <p class="step-desc">
+            An embodied celestial desktop companion living with you on Windows. 
+            Features full-screen autonomous locomotion, local ReAct intelligence, 
+            and offline Kokoro neural speech.
+          </p>
+
+          <div class="highlights-grid">
+            <div class="highlight-card">
+              <div class="card-icon">🏃</div>
+              <div class="card-title">Desktop Roaming</div>
+              <div class="card-desc">Moves dynamically across taskbars, window shelves, and vantage perches.</div>
+            </div>
+            <div class="highlight-card">
+              <div class="card-icon">🗣️</div>
+              <div class="card-title">Kokoro Neural Voice</div>
+              <div class="card-desc">Warm, expressive speech with 0ms local sync and zero cloud latency.</div>
+            </div>
+            <div class="highlight-card">
+              <div class="card-icon">🧠</div>
+              <div class="card-title">Autonomous Reasoning</div>
+              <div class="card-desc">Observes active screens and executes complex workflow automations.</div>
+            </div>
+            <div class="highlight-card">
+              <div class="card-icon">🛡️</div>
+              <div class="card-title">100% Local Privacy</div>
+              <div class="card-desc">Powered locally on your machine. Zero tracking or telemetry.</div>
+            </div>
+          </div>
+
+          <div class="creator-badge">
+            <span>Publisher: <b>Buildonaut - Suryaansh</b></span>
+            <span class="dot">•</span>
+            <span>Edition: <b>Brahma Sol 2.0</b></span>
+          </div>
+
+          <div class="wizard-footer">
+            <button id="btn-step1-next" class="btn-primary">
+              <span>Begin Installation</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: STORAGE SELECTION & SETUP LOCATION ── -->
+        <div id="step-2" class="step-container">
+          <div class="step-badge">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>Target Destination</span>
+          </div>
+          <h2 class="step-title">Storage & Setup Location</h2>
+          <p class="step-desc">
+            Choose where Brahma Sol will establish its core cortex, 3D companion runtime, and neural speech weights.
+          </p>
+
+          <div class="setting-group">
+            <div class="setting-label">
+              <span>Installation Directory</span>
+              <span class="ready-tag">Destination Verified</span>
+            </div>
+            <div class="path-input-row">
+              <input type="text" id="install-path-input" class="path-input" spellcheck="false" value="C:\Program Files\Brahma Sol">
+              <button id="btn-browse-path" class="browse-btn">Browse...</button>
+            </div>
+          </div>
+
+          <!-- Disk Space Telemetry Card -->
+          <div class="disk-telemetry-box">
+            <div class="disk-row">
+              <span>Space Required: <b>~2.8 GB</b></span>
+              <span id="disk-free-label">Calculating Free Space...</span>
+            </div>
+            <div class="disk-track">
+              <div id="disk-fill-bar" class="disk-fill" style="width: 25%;"></div>
+            </div>
+            <div class="disk-status">
+              <span>✓ High-speed solid-state storage recommended</span>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="checkbox-list">
+            <label class="custom-checkbox">
+              <input type="checkbox" id="chk-desktop" checked>
+              <span class="checkbox-mark"></span>
+              <span>Create Brahma Sol Desktop Shortcut</span>
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" id="chk-startmenu" checked>
+              <span class="checkbox-mark"></span>
+              <span>Add to Windows Start Menu Programs</span>
+            </label>
+            <label class="custom-checkbox">
+              <input type="checkbox" id="chk-startup">
+              <span class="checkbox-mark"></span>
+              <span>Launch Brahma Sol automatically on Windows Startup</span>
+            </label>
+          </div>
+
+          <div class="wizard-footer">
+            <button id="btn-step2-back" class="btn-secondary">← Back</button>
+            <button id="btn-step2-next" class="btn-primary">
+              <span>Install Brahma Sol</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: START DOWNLOAD & EXTRACTION PROGRESS ── -->
+        <div id="step-3" class="step-container">
+          <div class="step-badge">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Deploying Companion</span>
+          </div>
+          <h2 class="step-title">Deploying Brahma Sol</h2>
+          <p class="step-desc">
+            Unpacking 3D models, neural weights, and spatial locomotion controllers...
+          </p>
+
+          <div class="progress-card">
+            <div class="progress-header">
+              <div id="install-component-label" class="install-component-name">Initializing setup pipeline...</div>
+              <div id="install-pct-label" class="install-pct">0%</div>
+            </div>
+
+            <div class="progress-track">
+              <div id="install-progress-fill" class="progress-fill"></div>
+            </div>
+
+            <div class="install-metrics">
+              <span>Speed: <b id="metric-speed">~52.4 MB/s</b></span>
+              <span>Deployed: <b id="metric-deployed">0.0 GB / 2.8 GB</b></span>
+              <span>ETA: <b id="metric-eta">Calculating...</b></span>
+            </div>
+          </div>
+
+          <!-- Live Log Drawer -->
+          <div id="log-drawer" class="log-drawer">
+            <div class="log-line">[SYSTEM] Initializing Brahma Sol installer engine...</div>
+          </div>
+        </div>
+
+        <!-- ── STEP 4: LAUNCH APP (COMPLETE) ── -->
+        <div id="step-4" class="step-container">
+          <div class="step-badge">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            <span>Setup Complete</span>
+          </div>
+          <h2 class="step-title">Brahma Sol is Ready</h2>
+          <p class="step-desc">
+            Brahma Sol has been successfully deployed and is ready to inhabit your desktop.
+          </p>
+
+          <div class="success-banner">
+            <div class="success-icon">✓</div>
+            <div class="success-text">
+              <h4>Brahma Sol Installed Successfully</h4>
+              <p>Publisher: Buildonaut - Suryaansh • All 62 animation channels verified.</p>
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-row">
+              <span class="label">Executable Target:</span>
+              <span class="val">BrahmaSol.exe</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Voice Engine:</span>
+              <span class="val">Kokoro-82M Neural Offline TTS</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Locomotion Controller:</span>
+              <span class="val">Active (Full-Screen Roam)</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Creator:</span>
+              <span class="val">Buildonaut - Suryaansh</span>
+            </div>
+          </div>
+
+          <div class="wizard-footer">
+            <button id="btn-finish-close" class="btn-secondary">Finish & Exit</button>
+            <button id="btn-launch-app" class="btn-primary">
+              <span>Launch Brahma Sol</span>
+              <span style="font-size: 15px;">🚀</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================
+           RIGHT COLUMN: 3D COMPANION STAGE & DANCE SUITE
+           ======================================================== -->
+      <section class="right-pane">
+        <div class="stage-aura"></div>
+        <div id="companion-3d-stage"></div>
+
+        <!-- Dynamic Dance Control Badge -->
+        <div class="stage-control-bar">
+          <div class="dance-info">
+            <div class="dance-dot"></div>
+            <div class="dance-label">
+              <span>Companion:</span> <span id="active-dance-name">Dance Simple</span>
+            </div>
+          </div>
+          <button id="btn-cycle-dance" class="btn-cycle-dance" title="Cycle companion dance">
+            <span>Next Dance</span>
+            <span>🔀</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="installer.js"></script>
+</body>
+</html>

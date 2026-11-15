@@ -1,0 +1,812 @@
+/* ============================================================
+   BRAHMA SOL — WHITE & GOLD CELESTIAL INSTALLER STYLES
+   Inspired by Brahma Sol Celestial Ocean Aesthetic & App Design
+   Palette: Pearl Ivory (#FAF9F6), Warm Porcelain (#F5F0E6),
+            Champagne Gold (#C6A35C / #E8D8B8), Ice Blue (#38BDF8),
+            Deep Navy Typography (#172238)
+   ============================================================ */
+
+:root {
+  --bg-pearl: #FAF9F6;
+  --bg-porcelain: #F5F0E6;
+  --bg-card: rgba(255, 255, 255, 0.88);
+  --bg-card-hover: rgba(255, 255, 255, 0.96);
+  --bg-card-subtle: rgba(245, 240, 230, 0.72);
+  
+  --border-gold: rgba(198, 163, 92, 0.42);
+  --border-gold-bright: rgba(198, 163, 92, 0.75);
+  --border-subtle: rgba(23, 34, 56, 0.08);
+
+  --gold-primary: #C6A35C;
+  --gold-light: #E8D8B8;
+  --gold-dark: #9E7B35;
+  --gold-glow: rgba(198, 163, 92, 0.28);
+
+  --cyan-primary: #0284C7;
+  --cyan-light: #38BDF8;
+  --cyan-glow: rgba(56, 189, 248, 0.35);
+
+  --text-main: #172238;
+  --text-secondary: #2C3E5D;
+  --text-muted: #5C6E8A;
+  --text-dim: #8E9FB8;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent !important;
+  font-family: var(--font-sans);
+  color: var(--text-main);
+}
+
+/* ── Main Installer Shell Window ── */
+#installer-window {
+  position: absolute;
+  inset: 12px;
+  background: radial-gradient(circle at 75% 20%, #FFFFFF 0%, #FAF8F4 50%, #F3EDE2 100%);
+  border-radius: 22px;
+  border: 1.5px solid var(--border-gold);
+  box-shadow: 0 25px 70px rgba(23, 34, 56, 0.18), 0 0 35px rgba(198, 163, 92, 0.22);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Ambient Background Canvas (Celestial Waves) ── */
+#celestial-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+}
+
+/* ── Custom Window Header Bar ── */
+.window-header {
+  position: relative;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-app-region: drag;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-sol-badge {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
+}
+
+.brand-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.version-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(198, 163, 92, 0.18), rgba(198, 163, 92, 0.32));
+  color: var(--gold-dark);
+  border: 1px solid var(--border-gold);
+}
+
+.publisher-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.win-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(23, 34, 56, 0.05);
+  border: 1px solid rgba(23, 34, 56, 0.08);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.win-btn:hover {
+  background: rgba(198, 163, 92, 0.2);
+  border-color: var(--border-gold);
+  color: var(--gold-dark);
+}
+
+.win-btn.close:hover {
+  background: #EF4444;
+  border-color: #DC2626;
+  color: #FFFFFF;
+}
+
+/* ── Main Split View ── */
+.installer-body {
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  display: flex;
+  height: calc(100% - 56px);
+  overflow: hidden;
+}
+
+/* ── Left Pane: Wizard Flow ── */
+.left-pane {
+  flex: 1.15;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(250, 248, 244, 0.45) 100%);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Step Ribbon ── */
+.step-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 16px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(23, 34, 56, 0.04);
+}
+
+.ribbon-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  transition: all 0.25s ease;
+}
+
+.ribbon-item .ribbon-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(23, 34, 56, 0.06);
+  color: var(--text-muted);
+}
+
+.ribbon-item.active {
+  color: var(--text-main);
+}
+
+.ribbon-item.active .ribbon-num {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+  color: #172238;
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.ribbon-item.completed {
+  color: var(--gold-dark);
+}
+
+.ribbon-item.completed .ribbon-num {
+  background: rgba(198, 163, 92, 0.22);
+  color: var(--gold-dark);
+}
+
+.ribbon-divider {
+  flex: 1;
+  height: 1px;
+  background: rgba(23, 34, 56, 0.08);
+  margin: 0 10px;
+}
+
+/* ── Step Containers ── */
+.step-container {
+  display: none;
+  flex-direction: column;
+  animation: fadeInStep 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.step-container.active {
+  display: flex;
+  flex: 1;
+}
+
+@keyframes fadeInStep {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(198, 163, 92, 0.15);
+  color: var(--gold-dark);
+  border: 1px solid var(--border-gold);
+  margin-bottom: 12px;
+}
+
+.step-badge svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.step-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.step-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+
+/* ── Step 1 Highlights Grid ── */
+.highlights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.highlight-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(23, 34, 56, 0.03);
+}
+
+.highlight-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(198, 163, 92, 0.12);
+}
+
+.card-icon {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 3px;
+}
+
+.card-desc {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.creator-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border-gold);
+  padding: 6px 14px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  width: fit-content;
+}
+
+.creator-badge .dot {
+  color: var(--gold-primary);
+}
+
+/* ── Step 2 Settings & Path Input ── */
+.setting-group {
+  margin-bottom: 18px;
+}
+
+.setting-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.ready-tag {
+  color: var(--gold-dark);
+  font-weight: 700;
+}
+
+.path-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.path-input {
+  flex: 1;
+  background: #FFFFFF;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.path-input:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 3px rgba(198, 163, 92, 0.2);
+}
+
+.browse-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.browse-btn:hover {
+  background: rgba(198, 163, 92, 0.12);
+  border-color: var(--border-gold);
+  color: var(--gold-dark);
+}
+
+/* ── Disk Telemetry ── */
+.disk-telemetry-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.disk-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.disk-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(23, 34, 56, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.disk-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-primary), var(--cyan-light));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.disk-status {
+  font-size: 11px;
+  color: #16A34A;
+  font-weight: 500;
+}
+
+/* ── Custom Checkbox List ── */
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.custom-checkbox input {
+  display: none;
+}
+
+.checkbox-mark {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(198, 163, 92, 0.5);
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.custom-checkbox input:checked + .checkbox-mark {
+  background: var(--gold-primary);
+  border-color: var(--gold-primary);
+}
+
+.custom-checkbox input:checked + .checkbox-mark::after {
+  content: "✓";
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ── Step 3 Progress & Extraction Card ── */
+.progress-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 20px rgba(198, 163, 92, 0.1);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.install-component-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80%;
+}
+
+.install-pct {
+  font-size: 13px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--gold-dark);
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(23, 34, 56, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-primary) 0%, #E8D8B8 50%, var(--cyan-light) 100%);
+  border-radius: 4px;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.install-metrics {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.install-metrics b {
+  color: var(--text-secondary);
+}
+
+/* ── Live Log Drawer ── */
+.log-drawer {
+  flex: 1;
+  max-height: 140px;
+  background: rgba(23, 34, 56, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.log-line {
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.log-line.active {
+  color: var(--gold-dark);
+}
+
+.log-line.success {
+  color: #16A34A;
+  font-weight: 600;
+}
+
+/* ── Step 4 Success & Summary ── */
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(198, 163, 92, 0.16), rgba(56, 189, 248, 0.12));
+  border: 1.5px solid var(--border-gold-bright);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.success-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+  color: #172238;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  box-shadow: 0 0 14px var(--gold-glow);
+}
+
+.success-text h4 {
+  font-size: 13.5px;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.success-text p {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(23, 34, 56, 0.08);
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row .label {
+  color: var(--text-muted);
+}
+
+.summary-row .val {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+/* ── Footer Buttons ── */
+.wizard-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #DFBE7A, #C6A35C);
+  color: #172238;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px var(--gold-glow);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(198, 163, 92, 0.38);
+  background: linear-gradient(135deg, #EAD093, #D4AF67);
+}
+
+.btn-secondary {
+  background: #FFFFFF;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(198, 163, 92, 0.1);
+  border-color: var(--border-gold);
+  color: var(--gold-dark);
+}
+
+/* ── Right Pane: 3D Companion Stage ── */
+.right-pane {
+  flex: 0.95;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92) 0%, rgba(245, 240, 230, 0.55) 70%, rgba(235, 225, 205, 0.25) 100%);
+}
+
+.stage-aura {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(198, 163, 92, 0.22) 0%, rgba(56, 189, 248, 0.12) 40%, transparent 70%);
+  filter: blur(35px);
+  pointer-events: none;
+}
+
+#companion-3d-stage {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+#companion-3d-stage:active {
+  cursor: grabbing;
+}
+
+/* ── Dance Controller Pill ── */
+.stage-control-bar {
+  position: absolute;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid var(--border-gold);
+  backdrop-filter: blur(16px);
+  padding: 6px 14px;
+  border-radius: 30px;
+  box-shadow: 0 8px 24px rgba(23, 34, 56, 0.08);
+}
+
+.dance-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dance-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold-primary);
+  box-shadow: 0 0 8px var(--gold-glow);
+  animation: pulseGold 2s infinite ease-in-out;
+}
+
+@keyframes pulseGold {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.dance-label {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.dance-label span#active-dance-name {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.btn-cycle-dance {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(198, 163, 92, 0.15);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cycle-dance:hover {
+  background: var(--gold-primary);
+  color: #FFFFFF;
+}

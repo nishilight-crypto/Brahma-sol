@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brahma Sol 3D Stage</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    #stage-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+    }
+
+    canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      background: transparent !important;
+    }
+
+    /* ── Holographic Speech Bubble ── */
+    #speech-bubble {
+      position: absolute;
+      top: 25px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px) scale(0.95);
+      max-width: 380px;
+      min-width: 180px;
+      padding: 12px 18px;
+      background: rgba(10, 15, 29, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.2);
+      color: #e2e8f0;
+      font-size: 13.5px;
+      line-height: 1.5;
+      pointer-events: auto;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.25s;
+      z-index: 100;
+    }
+
+    #speech-bubble.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    #speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 8px 8px 0;
+      border-style: solid;
+      border-color: rgba(10, 15, 29, 0.85) transparent transparent transparent;
+      display: block;
+      width: 0;
+    }
+
+    .bubble-author {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #00f0ff;
+      margin-bottom: 4px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bubble-author .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: #00f0ff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00f0ff;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .bubble-text {
+      color: #f8fafc;
+      word-wrap: break-word;
+    }
+
+    /* ── Diagnostic & Animation Testing Panel ── */
+    #dev-panel-toggle {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: #94a3b8;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 150;
+      transition: all 0.2s ease;
+    }
+
+    #dev-panel-toggle:hover {
+      background: rgba(0, 240, 255, 0.2);
+      color: #00f0ff;
+      border-color: #00f0ff;
+    }
+
+    #diagnostic-panel {
+      position: absolute;
+      top: 50px;
+      right: 12px;
+      width: 320px;
+      max-height: calc(100% - 65px);
+      background: rgba(10, 15, 29, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 12px;
+      padding: 14px;
+      color: #cbd5e1;
+      font-size: 12px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      z-index: 140;
+    }
+
+    #diagnostic-panel.visible {
+      display: flex;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 8px;
+    }
+
+    .panel-title {
+      font-weight: 700;
+      color: #00f0ff;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    .fps-badge {
+      font-size: 10px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .panel-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    select, button, input[type="range"] {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #f1f5f9;
+      padding: 7px 10px;
+      font-size: 11.5px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    select:focus, button:hover {
+      border-color: #00f0ff;
+    }
+
+    button {
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(59, 130, 246, 0.2));
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.35), rgba(59, 130, 246, 0.35));
+      color: #fff;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    .telemetry-item span {
+      color: #00f0ff;
+    }
+
+    /* ── Drag & Drop Overlay Indicator ── */
+    #dropzone-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 14px;
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px dashed #00f0ff;
+      border-radius: 20px;
+      color: #00f0ff;
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 120;
+    }
+
+    #stage-container.drag-over #dropzone-hint {
+      opacity: 1;
+    }
+  </style>
+  <script src="../assets/avatar/libs/three.min.js"></script>
+  <script src="../assets/avatar/libs/GLTFLoader.js"></script>
+  <script src="../assets/avatar/libs/qwebchannel.js"></script>
+</head>
+<body>
+  <div id="stage-container">
+    <div id="speech-bubble">
+      <div class="bubble-author">
+        <div class="pulse-dot"></div>
+        <span>Brahma Sol</span>
+      </div>
+      <div id="bubble-content" class="bubble-text">Ready.</div>
+    </div>
+
+    <div id="dev-panel-toggle" title="Toggle Animation Test Panel (F12)">⚙</div>
+
+    <div id="diagnostic-panel">
+      <div class="panel-header">
+        <span class="panel-title">Brahma Sol Diagnostic</span>
+        <span id="fps-counter" class="fps-badge">60 FPS</span>
+      </div>
+
+      <div class="panel-section">
+        <span class="panel-label">Live Telemetry</span>
+        <div class="telemetry-grid">
+          <div class="telemetry-item">Posture: <span id="tel-posture">STANDING</span></div>
+          <div class="telemetry-item">Energy: <span id="tel-energy">100%</span></div>
+          <div class="telemetry-item">Action: <span id="tel-action">IDLE</span></div>
+          <div class="telemetry-item">Heading: <span id="tel-yaw">0.0°</span></div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <span class="panel-label">Animation Library (62 Clips)</span>
+        <select id="clip-select"></select>
+        <button id="btn-play-clip">Play Selected Clip</button>
+      </div>
+
+      <div class="panel-section">
+        <span class="panel-label">Transition Cross-Fade Tester</span>
+        <select id="clip-transition-target"></select>
+        <button id="btn-test-transition">Cross-Fade Blend (0.3s)</button>
+      </div>
+
+      <div class="panel-section">
+        <span class="panel-label">Speed & Controls</span>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-pause" style="flex: 1;">Pause</button>
+          <button id="btn-resume" style="flex: 1;">Resume</button>
+          <button id="btn-reset-idle" style="flex: 1;">Idle</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+          <span style="font-size: 10px; color: #64748b;">Speed:</span>
+          <input type="range" id="speed-slider" min="0.25" max="2.0" step="0.25" value="1.0">
+          <span id="speed-val" style="font-size: 11px; min-width: 32px;">1.0x</span>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <span class="panel-label">Test Speech Bubble</span>
+        <button id="btn-test-speech">Say Sample Line</button>
+      </div>
+    </div>
+
+    <div id="dropzone-hint">Drop file for Brahma Sol inspection</div>
+  </div>
+
+  <script src="avatar_stage.js"></script>
+</body>
+</html>
