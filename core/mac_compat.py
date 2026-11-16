@@ -355,6 +355,53 @@ def list_window_titles() -> list[str]:
         return []
 
 
+def list_visible_windows() -> list[dict]:
+    """Cross-platform replacement for Windows EnumWindows.
+
+    Returns list of dicts: {"hwnd": int, "title": str, "class": str, "pid": int}.
+    On macOS uses Quartz/CGWindowListCopyWindowInfo.
+    """
+    if IS_MAC:
+        try:
+            import Quartz  # type: ignore
+            wins = Quartz.CGWindowListCopyWindowInfo(
+                Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
+                Quartz.kCGNullWindowID)
+            out = []
+            for w in wins or []:
+                if w.get("kCGWindowLayer", 1) != 0:
+                    continue
+                owner = w.get("kCGWindowOwnerName") or ""
+                name = w.get("kCGWindowName") or ""
+                wid = w.get("kCGWindowNumber", 0)
+                pid = w.get("kCGWindowOwnerPID", 0)
+                out.append({
+                    "hwnd": int(wid),
+                    "title": name or owner,
+                    "class": owner,
+                    "pid": int(pid),
+                })
+            return out
+        except Exception:
+            return []
+    try:
+        import pygetwindow as gw  # type: ignore
+        out = []
+        for w in gw.getAllWindows():
+            try:
+                out.append({
+                    "hwnd": id(w),
+                    "title": w.title or "",
+                    "class": "",
+                    "pid": 0,
+                })
+            except Exception:
+                pass
+        return out
+    except Exception:
+        return []
+
+
 def focus_app(name: str) -> bool:
     if IS_MAC:
         _osa(f'tell application "{_esc(name)}" to activate')

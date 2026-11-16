@@ -263,6 +263,9 @@ def _window_pid(hwnd: int) -> int:
 
 
 def _enum_visible_windows() -> list[dict]:
+    if sys.platform == "darwin":
+        from core.mac_compat import list_visible_windows
+        return list_visible_windows()
     results: list[dict] = []
     user32 = ctypes.windll.user32
     enum_proc = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
