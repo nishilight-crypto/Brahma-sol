@@ -204,15 +204,8 @@ def _ensure_desktop_shortcut() -> None:
         return
 
     try:
-        import winreg
-        try:
-            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders")
-            desktop_raw, _ = winreg.QueryValueEx(key, "Desktop")
-            winreg.CloseKey(key)
-            desktop_dir = Path(os.path.expandvars(desktop_raw))
-        except Exception:
-            desktop_dir = Path(os.path.expanduser("~")) / "Desktop"
-            
+        from core.mac_compat import get_user_shell_folder
+        desktop_dir = get_user_shell_folder("Desktop") or Path.home() / "Desktop"
         desktop_dir.mkdir(parents=True, exist_ok=True)
         shortcut_path = desktop_dir / "Brahma Sol.lnk"
         script_path = BASE_DIR / "main.py"

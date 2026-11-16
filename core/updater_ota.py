@@ -93,7 +93,9 @@ def download_and_apply_update(url: str, ui_callback=None):
             print(f"[OTA] Launching silent updater: {setup_path}")
             # Ensure DETACHED_PROCESS to survive sys.exit
             DETACHED_PROCESS = 0x00000008
-            subprocess.Popen([str(setup_path), "--silent"], creationflags=subprocess.CREATE_NO_WINDOW | DETACHED_PROCESS)
+            from core.mac_compat import get_creation_flags
+            flags = get_creation_flags().get('creationflags', 0) | DETACHED_PROCESS
+            subprocess.Popen([str(setup_path), "--silent"], creationflags=flags)
             sys.exit(0)
             
     except Exception as e:

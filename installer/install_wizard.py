@@ -215,8 +215,10 @@ class InstallWorkerThread(QThread):
                 pass
 
     def _register_uninstaller(self):
+        if os.name != "nt":
+            return
         try:
-            import winreg
+            import winreg  # type: ignore[import-not-found]
             reg_key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\BrahmaSol"
             with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, reg_key_path, 0, winreg.KEY_SET_VALUE) as key:
                 winreg.SetValueEx(key, "DisplayName", 0, winreg.REG_SZ, "Brahma Sol")

@@ -3,8 +3,11 @@ import os
 import shutil
 import time
 import subprocess
-import winreg
-import win32com.client
+
+IS_WIN = os.name == "nt"
+if IS_WIN:
+    import winreg  # type: ignore[import-not-found]
+    import win32com.client  # type: ignore[import-not-found]
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
     QLabel, QPushButton, QProgressBar, QCheckBox, QFrame, QStackedWidget,
@@ -56,11 +59,17 @@ class UninstallThread(QThread):
             
             # Kill running processes
             try:
-                subprocess.run(
-                    ["taskkill", "/F", "/IM", "BrahmaEvo.exe", "/T"],
-                    capture_output=True,
-                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
-                )
+                if IS_WIN:
+                    subprocess.run(
+                        ["taskkill", "/F", "/IM", "BrahmaEvo.exe", "/T"],
+                        capture_output=True,
+                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
+                    )
+                else:
+                    subprocess.run(
+                        ["pkill", "-f", "BrahmaEvo"],
+                        capture_output=True,
+                    )
             except Exception:
                 pass
             time.sleep(0.5)
@@ -92,8 +101,9 @@ class UninstallThread(QThread):
             self.status.emit("Unregistering from Windows Installed Apps...")
             self.progress.emit(55)
             try:
-                key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\BrahmaEvo"
-                winreg.DeleteKey(winreg.HKEY_CURRENT_USER, key_path)
+                if IS_WIN:
+                    key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\BrahmaEvo"
+                    winreg.DeleteKey(winreg.HKEY_CURRENT_USER, key_path)
             except Exception as e:
                 print(f"Registry unregister error: {e}")
 
@@ -117,15 +127,25 @@ class UninstallThread(QThread):
             # Schedule delayed deletion of the installation directory
             # (Because this process is currently running inside or alongside the target folder)
             self_exe = sys.executable
-            detach_cmd = f'timeout /t 2 /nobreak >nul & rd /s /q "{self.target_dir}"'
-            try:
-                subprocess.Popen(
-                    f'cmd.exe /c "{detach_cmd}"',
-                    shell=True,
-                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
-                )
-            except Exception as e:
-                print(f"Failed to spawn detachment cleanup: {e}")
+            if IS_WIN:
+                detach_cmd = f'timeout /t 2 /nobreak >nul & rd /s /q "{self.target_dir}"'
+                try:
+                    subprocess.Popen(
+                        f'cmd.exe /c "{detach_cmd}"',
+                        shell=True,
+                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
+                    )
+                except Exception as e:
+                    print(f"Failed to spawn detachment cleanup: {e}")
+            else:
+                # macOS/Linux: delayed self-removal
+                try:
+                    subprocess.Popen(
+                        ["sh", "-c", f"sleep 2 && rm -rf '{self.target_dir}'"],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    )
+                except Exception as e:
+                    print(f"Failed to spawn detachment cleanup: {e}")
 
             self.progress.emit(100)
             self.status.emit("Brahma Evo was successfully removed!")

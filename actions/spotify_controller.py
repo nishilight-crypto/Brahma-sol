@@ -269,7 +269,8 @@ def spotify_controller(
         # If Desktop Spotify App exists, launch it
         if spotify_app:
             try:
-                os.startfile(f"spotify:search:{encoded}")
+                from core.mac_compat import startfile
+                startfile(f"spotify:search:{encoded}")
                 time.sleep(1.2)
                 _press_media_key("playpause")
                 return f"Playing '{query}' on Spotify."

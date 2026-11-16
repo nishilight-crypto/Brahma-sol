@@ -454,3 +454,112 @@ APP_ALIASES = {
 
 def mac_app_name(name: str) -> str:
     return APP_ALIASES.get(name.strip().lower(), name)
+
+
+# ── Cross-platform helpers (drop-in replacements for Windows APIs) ──────────
+
+def get_desktop_path() -> Path:
+    """Cross-platform path to the user's Desktop folder."""
+    if IS_MAC:
+        return Path.home() / "Desktop"
+    if IS_WIN:
+        return Path(os.environ.get("USERPROFILE", str(Path.home()))) / "Desktop"
+    return Path.home() / "Desktop"
+
+
+def get_user_data_dir(app_name: str = "Brahma Sol") -> Path:
+    """Cross-platform user data dir (Windows: %APPDATA%, macOS: ~/Library/Application Support)."""
+    if IS_MAC:
+        return Path.home() / "Library" / "Application Support" / app_name
+    if IS_WIN:
+        return Path(os.environ.get("APPDATA", str(Path.home()))) / app_name
+    return Path.home() / f".{app_name.lower().replace(' ', '_')}"
+
+
+def get_user_shell_folder(csidl_name: str = "Desktop") -> Path | None:
+    """Cross-platform replacement for Windows Shell Folders registry lookup.
+
+    On Windows this reads the registry; on macOS it returns the standard
+    XDG/user folder. Returns None if the folder cannot be determined.
+    """
+    if IS_WIN:
+        try:
+            import winreg  # type: ignore[import-not-found]
+            key = winreg.OpenKey(
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders",
+            )
+            val, _ = winreg.QueryValueEx(key, csidl_name)
+            winreg.CloseKey(key)
+            return Path(val)
+        except Exception:
+            return None
+    if IS_MAC:
+        mapping = {
+            "Desktop": Path.home() / "Desktop",
+            "Personal": Path.home() / "Documents",
+            "My Documents": Path.home() / "Documents",
+            "Favorites": Path.home() / "Library" / "Favorites",
+        }
+        return mapping.get(csidl_name, Path.home())
+    return None
+
+
+def lock_workstation() -> bool:
+    """Lock the screen / workstation (macOS equivalent of LockWorkStation)."""
+    if IS_MAC:
+        return _osa('tell application "System Events" to keystroke "q" using {control down, command down}')
+    if IS_WIN:
+        try:
+            import ctypes  # type: ignore
+            return bool(ctypes.windll.user32.LockWorkStation())  # type: ignore[attr-defined]
+        except Exception:
+            return False
+    return False
+
+
+def set_system_theme(light: bool = True) -> bool:
+    """Toggle Windows light/dark theme via registry; macOS uses appearance preferences."""
+    if IS_MAC:
+        val = "false" if light else "true"
+        return _osa(f'tell application "System Events" to tell appearance preferences to set dark mode to {val}')
+    if IS_WIN:
+        try:
+            import winreg  # type: ignore[import-not-found]
+            value = 1 if light else 0
+            for path in (
+                r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                r"Control Panel\Desktop",
+            ):
+                try:
+                    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, path, 0, winreg.KEY_ALL_ACCESS)
+                    try:
+                        winreg.SetValueEx(key, "AppsUseLightTheme", 0, winreg.REG_DWORD, value)
+                    except Exception:
+                        pass
+                    try:
+                        winreg.SetValueEx(key, "SystemUsesLightTheme", 0, winreg.REG_DWORD, value)
+                    except Exception:
+                        pass
+                    winreg.CloseKey(key)
+                except Exception:
+                    continue
+            return True
+        except Exception:
+            return False
+    return False
+
+
+def hide_console_window() -> bool:
+    """No-op on macOS (Windows uses CREATE_NO_WINDOW / SW_HIDE). Returns True."""
+    return True
+
+
+def get_creation_flags() -> dict:
+    """Cross-platform subprocess creation flags.
+
+    Windows: {'creationflags': subprocess.CREATE_NO_WINDOW}
+    macOS/Linux: {}
+    Use as: subprocess.Popen(..., **get_creation_flags())
+    """
+    return NO_WINDOW

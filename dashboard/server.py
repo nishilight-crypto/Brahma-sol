@@ -77,8 +77,8 @@ def _quiet_run(*args, **kwargs):
     import platform
     import subprocess
 
-    if platform.system() == 'Windows':
-        kwargs.setdefault('creationflags', getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+    from core.mac_compat import get_creation_flags
+    kwargs.setdefault('creationflags', get_creation_flags().get('creationflags', 0))
     return subprocess.run(*args, **kwargs)
 
 
