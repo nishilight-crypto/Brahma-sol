@@ -152,7 +152,7 @@ def get_base_dir():
 BASE_DIR        = get_base_dir()
 API_CONFIG_PATH = get_user_data_dir() / "config" / "api_keys.json"
 PROMPT_PATH     = BASE_DIR / "core" / "prompt.txt"
-STARTUP_LOG     = Path(os.environ.get("LOCALAPPDATA", str(BASE_DIR))) / "Brahma Sol" / "startup.log"
+STARTUP_LOG     = (Path(os.environ.get("LOCALAPPDATA", str(BASE_DIR))) if os.name == "nt" else Path.home() / "Library" / "Logs") / "Brahma Sol" / "startup.log"
 LIVE_MODEL          = "models/gemini-2.5-flash-native-audio-latest"
 CHANNELS            = 1
 SEND_SAMPLE_RATE    = 16000
@@ -183,6 +183,19 @@ def _startup_log(message: str) -> None:
 
 
 def _ensure_desktop_shortcut() -> None:
+    if sys.platform == "darwin":
+        try:
+            marker = get_user_data_dir() / "config" / ".desktop_shortcut_created"
+            if marker.exists():
+                return
+            cmd = Path.home() / "Desktop" / "Brahma Sol.command"
+            cmd.write_text(f'#!/bin/bash\ncd "{BASE_DIR}"\n"{sys.executable}" main.py\n', encoding="utf-8")
+            cmd.chmod(0o755)
+            marker.parent.mkdir(parents=True, exist_ok=True)
+            marker.write_text("created", encoding="utf-8")
+        except Exception as exc:
+            _startup_log(f"mac launcher creation skipped: {exc}")
+        return
     if os.name != "nt":
         return
 
@@ -7107,7 +7120,7 @@ def main():
         except Exception as _mex:
             _startup_log(f"Mutex check skipped: {_mex}")
     try:
-        if update_from_github(BASE_DIR):
+        if sys.platform != "darwin" and update_from_github(BASE_DIR):
             _startup_log("updated from GitHub; restarting")
             restart_application(BASE_DIR)
             return

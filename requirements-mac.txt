@@ -1,0 +1,46 @@
+# macOS requirements for Brahma Sol (Windows-only packages removed/replaced)
+sounddevice
+google-genai
+google-generativeai
+pillow
+requests
+python-kasa
+beautifulsoup4
+duckduckgo-search
+playwright
+pyautogui
+pyperclip
+opencv-python
+numpy
+mediapipe
+mss
+psutil
+instagrapi
+send2trash
+youtube-transcript-api
+pyaudio
+openpyxl
+python-pptx
+python-docx
+reportlab
+discord.py
+fastapi
+uvicorn[standard]
+cryptography
+qrcode[pil]
+python-multipart
+PyQt6
+PyQt6-WebEngine
+edge-tts
+matplotlib
+speedtest-cli
+# mac replacements for pycaw / pywinauto / pygetwindow / win10toast
+pyobjc-core
+pyobjc-framework-Cocoa
+pyobjc-framework-Quartz
+pyobjc-framework-ApplicationServices
+# local voice
+kokoro-onnx
+onnxruntime
+ollama
+pynput

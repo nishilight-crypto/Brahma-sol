@@ -52,6 +52,8 @@ class AutoUpdater:
 
     def check_for_updates(self, timeout: float = 6.0) -> Optional[Dict[str, Any]]:
         """Queries the Cloudflare update hub for newer releases."""
+        if sys.platform == "darwin":
+            return None  # self-update disabled on macOS port
         if self._is_checking:
             return None
         self._is_checking = True
@@ -96,6 +98,8 @@ class AutoUpdater:
         on_complete: Optional[Callable[[], None]] = None
     ) -> bool:
         """Downloads the installer and executes the Windows silent hot-swap handoff."""
+        if sys.platform == "darwin":
+            return False  # self-update disabled on macOS port
         if not self.update_info:
             return False
         if self._is_downloading:

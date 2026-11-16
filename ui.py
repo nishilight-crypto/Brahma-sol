@@ -34,6 +34,28 @@ from pathlib import Path
 import psutil
 if platform.system() == "Windows":
     import winreg
+try:
+    from core.mac_compat import (
+        IS_MAC as _IS_MAC, IS_WIN as _IS_WIN,
+        startfile as _mc_startfile, reveal_in_finder as _mc_reveal,
+    )
+except Exception:  # pragma: no cover
+    import subprocess
+    _IS_MAC = sys.platform == "darwin"
+    _IS_WIN = os.name == "nt"
+    def _mc_startfile(path):
+        try:
+            if _IS_WIN:
+                os.startfile(str(path))
+            else:
+                subprocess.Popen(["open" if _IS_MAC else "xdg-open", str(path)])
+            return True
+        except Exception:
+            return False
+    def _mc_reveal(path):
+        if _IS_MAC:
+            return subprocess.run(["open", "-R", str(path)]).returncode == 0
+        return _mc_startfile(Path(path).parent)
 
 from PyQt6.QtCore import (
     QEasingCurve, QEvent, QObject, QPoint, QPointF, QRect, QRectF, QSize, Qt,
@@ -44,6 +66,14 @@ from PyQt6.QtGui import (
     QIcon, QImage, QKeySequence, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap,
     QRadialGradient, QShortcut,
 )
+if sys.platform == "darwin":
+    try:
+        QFont.insertSubstitutions("Segoe UI", [".AppleSystemUIFont", "Helvetica Neue"])
+        QFont.insertSubstitutions("Segoe UI Emoji", ["Apple Color Emoji"])
+        QFont.insertSubstitutions("Segoe UI Symbol", ["Apple Symbols"])
+        QFont.insertSubstitutions("Consolas", ["Menlo", "Monaco"])
+    except Exception:
+        pass
 from PyQt6.QtWidgets import (
     QApplication, QCheckBox, QColorDialog, QComboBox, QDialog, QFileDialog, QFrame, QGraphicsOpacityEffect, QGridLayout, QHBoxLayout,
     QLabel, QLineEdit, QMenu, QMainWindow, QPushButton, QScrollArea, QSizePolicy, QSlider, QTextEdit,
@@ -1531,6 +1561,29 @@ def _startup_registry_key():
     return r"Software\Microsoft\Windows\CurrentVersion\Run"
 
 
+def _mac_launch_agent_path() -> Path:
+    return Path.home() / "Library" / "LaunchAgents" / "com.brahma.evo.plist"
+
+
+def _mac_set_launch_agent(enabled: bool) -> None:
+    import plistlib
+    path = _mac_launch_agent_path()
+    if not enabled:
+        if path.exists():
+            subprocess.run(["launchctl", "unload", str(path)], capture_output=True)
+            path.unlink()
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = {
+        "Label": "com.brahma.evo",
+        "ProgramArguments": _hidden_launch_args("--startup"),
+        "WorkingDirectory": str(BASE_DIR),
+        "RunAtLoad": True,
+    }
+    with open(path, "wb") as fh:
+        plistlib.dump(data, fh)
+
+
 def _current_boot_stamp() -> int:
     try:
         return int(psutil.boot_time())
@@ -2984,7 +3037,7 @@ class ArtifactCard(QFrame):
         if not self._path or not Path(self._path).exists():
             return
         try:
-            os.startfile(self._path)
+            _mc_startfile(self._path)
         except Exception:
             pass
 
@@ -2995,7 +3048,7 @@ class ArtifactCard(QFrame):
             if platform.system() == "Windows":
                 subprocess.Popen(["explorer", "/select,", self._path])
             else:
-                os.startfile(str(Path(self._path).parent))
+                _mc_reveal(self._path)
         except Exception:
             pass
 
@@ -5778,8 +5831,8 @@ class BrahmaResultWing(QFrame):
             p = Path(self._active_file_path).resolve()
             if p.exists():
                 try:
-                    if sys.platform == "win32":
-                        os.startfile(str(p))
+                    if sys.platform in ("win32", "darwin"):
+                        _mc_startfile(str(p))
                     else:
                         import subprocess
                         subprocess.Popen(["xdg-open", str(p)])
@@ -5796,6 +5849,11 @@ class BrahmaResultWing(QFrame):
                         subprocess.Popen(["explorer.exe", f"/select,{str(p)}"])
                     elif p.parent.exists():
                         subprocess.Popen(["explorer.exe", str(p.parent)])
+                elif sys.platform == "darwin":
+                    if p.exists():
+                        subprocess.Popen(["open", "-R", str(p)])
+                    elif p.parent.exists():
+                        subprocess.Popen(["open", str(p.parent)])
                 else:
                     subprocess.Popen(["xdg-open", str(p.parent)])
             except Exception as e:
@@ -9803,6 +9861,8 @@ class MainWindow(QMainWindow):
     def _make_window_icon(self) -> QIcon:
         return _logo_icon()
     def _apply_dwmapi_corners(self):
+        if not _IS_WIN:
+            return  # DWM rounded corners are Windows-only
         try:
             import ctypes
             from ctypes import wintypes
@@ -10519,6 +10579,8 @@ class MainWindow(QMainWindow):
         }
 
     def _startup_enabled(self) -> bool:
+        if _IS_MAC:
+            return _mac_launch_agent_path().exists()
         if platform.system() != "Windows":
             return False
         try:
@@ -10540,6 +10602,13 @@ class MainWindow(QMainWindow):
             return False
 
     def _set_startup_enabled(self, enabled: bool) -> bool:
+        if _IS_MAC:
+            try:
+                _mac_set_launch_agent(enabled)
+                return True
+            except Exception as e:
+                self._log.append_log(f"ERR: startup setting failed: {e}")
+                return False
         if platform.system() != "Windows":
             return False
         run_value = _startup_run_value()
@@ -12759,13 +12828,13 @@ class SystemConnectivitySidebar(QFrame):
 
     def _open_data_folder(self):
         try:
-            os.startfile(str(CONFIG_DIR))
+            _mc_startfile(str(CONFIG_DIR))
         except Exception:
             pass
 
     def _view_logs(self):
         try:
-            os.startfile(str(BASE_DIR))
+            _mc_startfile(str(BASE_DIR))
         except Exception:
             pass
 
@@ -15449,13 +15518,13 @@ class SystemConnectivityPage(QWidget):
 
     def _open_data_folder(self):
         try:
-            os.startfile(str(CONFIG_DIR))
+            _mc_startfile(str(CONFIG_DIR))
         except Exception:
             pass
 
     def _view_logs(self):
         try:
-            os.startfile(str(BASE_DIR))
+            _mc_startfile(str(BASE_DIR))
         except Exception:
             pass
 
@@ -15576,6 +15645,8 @@ class SystemConnectivityPage(QWidget):
             import shutil
             import subprocess
             from pathlib import Path
+            if sys.platform == "darwin":
+                return self._create_mac_desktop_launcher()
             import winreg
             
             # Find the correct Desktop folder path using registry (OneDrive safe!)
@@ -15641,6 +15712,32 @@ class SystemConnectivityPage(QWidget):
         except Exception as e:
             return False, str(e)
 
+    def _create_mac_desktop_launcher(self):
+        try:
+            import shlex
+            desktop_dir = Path.home() / "Desktop"
+            desktop_dir.mkdir(parents=True, exist_ok=True)
+            launcher = desktop_dir / "Brahma Evo.command"
+            base_dir = Path(os.path.abspath("."))
+            if getattr(sys, "frozen", False):
+                cmd = shlex.quote(sys.executable)
+            else:
+                cmd = f"{shlex.quote(sys.executable)} {shlex.quote(str(base_dir / 'main.py'))}"
+            launcher.write_text(
+                "#!/bin/bash\n"
+                f"cd {shlex.quote(str(base_dir))}\n"
+                f"nohup {cmd} >/dev/null 2>&1 &\n"
+                "osascript -e 'tell application \"Terminal\" to close front window' >/dev/null 2>&1 &\n",
+                encoding="utf-8",
+            )
+            launcher.chmod(0o755)
+            marker_path = get_user_data_dir() / "config" / ".desktop_shortcut_created"
+            marker_path.parent.mkdir(parents=True, exist_ok=True)
+            marker_path.write_text("created", encoding="utf-8")
+            return True, str(launcher)
+        except Exception as e:
+            return False, str(e)
+
     def _pin_app_to_taskbar_logic(self):
         try:
             import os
@@ -15649,6 +15746,8 @@ class SystemConnectivityPage(QWidget):
             import subprocess
             from pathlib import Path
             
+            if sys.platform == "darwin":
+                return False, "macOS does not allow programmatic Dock pinning. Launch Brahma Evo, then right-click its Dock icon and choose Options > Keep in Dock (or drag the 'Brahma Evo.command' launcher from your Desktop into the Dock)."
             # Ensure desktop shortcut exists first
             success, path_or_err = self._create_desktop_shortcut_logic()
             if not success:
