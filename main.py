@@ -5478,13 +5478,6 @@ class BrahmaLive:
                 _speak_sapi_male(text)
             except Exception as exc:
                 print(f"[Brahma Speak] SAPI fallback notice: {exc}")
-                # macOS native say command fallback
-                if sys.platform == "darwin":
-                    try:
-                        from core.mac_compat import say
-                        say(text)
-                    except Exception as exc2:
-                        print(f"[Brahma Speak] macOS say fallback notice: {exc2}")
             finally:
                 self.set_speaking(False)
 

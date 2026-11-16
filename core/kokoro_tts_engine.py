@@ -178,6 +178,16 @@ class KokoroTTSEngine:
                         espeak_data = str(cand_dat)
                         break
 
+                # macOS Homebrew espeak-ng (lib and data are in separate dirs)
+                if sys.platform == "darwin" and (not espeak_lib or not espeak_data):
+                    for prefix in ("/opt/homebrew", "/usr/local"):
+                        lib_path = Path(prefix) / "lib" / "libespeak-ng.dylib"
+                        data_path = Path(prefix) / "share" / "espeak-ng-data"
+                        if lib_path.exists() and data_path.exists():
+                            espeak_lib = str(lib_path)
+                            espeak_data = str(data_path)
+                            break
+
             espeak_cfg = EspeakConfig(
                 lib_path=espeak_lib,
                 data_path=espeak_data

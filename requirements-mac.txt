@@ -42,5 +42,6 @@ pyobjc-framework-ApplicationServices
 # local voice
 kokoro-onnx
 onnxruntime
+espeakng-loader
 ollama
 pynput
