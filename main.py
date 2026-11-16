@@ -17,7 +17,7 @@ os.environ.setdefault(
 )
 
 try:
-    from PyQt6.QtCore import QCoreApplication, Qt
+    from PyQt6.QtCore import QCoreApplication, QTimer, Qt
     from PyQt6.QtGui import QSurfaceFormat
     QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts, True)
     fmt = QSurfaceFormat.defaultFormat()
@@ -7112,6 +7112,16 @@ def main():
                 _startup_log("Stale mutex detected, continuing launch.")
         except Exception as _mex:
             _startup_log(f"Mutex check skipped: {_mex}")
+    # macOS: activate NSApplication so windows appear when launched from terminal
+    if sys.platform == "darwin":
+        try:
+            from AppKit import NSApplication  # type: ignore
+            app = NSApplication.sharedApplication()
+            app.setActivationPolicy_(0)  # NSApplicationActivationPolicyRegular
+            app.activateIgnoringOtherApps_(True)
+        except Exception as _act_exc:
+            _startup_log(f"macOS app activation skipped: {_act_exc}")
+
     try:
         if sys.platform != "darwin" and update_from_github(BASE_DIR):
             _startup_log("updated from GitHub; restarting")
@@ -7120,7 +7130,11 @@ def main():
     except Exception as exc:
         _startup_log(f"GitHub update skipped: {exc}")
     _ensure_desktop_shortcut()
-    ui = BrahmaUI(str(BASE_DIR / "assets" / "Brahma_Lite_Logo.png"), show_immediately=False)
+    ui = BrahmaUI(str(BASE_DIR / "assets" / "Brahma_Lite_Logo.png"), show_immediately=True)
+    # macOS: skip boot overlay, show main window directly
+    if sys.platform == "darwin":
+        ui._boot_overlay = None
+        QTimer.singleShot(500, ui.show_main)
     dashboard = None
     dashboard_enabled = DashboardServer is not None and not _is_port_in_use(8000)
     if DashboardServer is not None and not dashboard_enabled:
@@ -7192,6 +7206,10 @@ def main():
 
     ui.show_main()
     _startup_log("ui shown")
+
+    # macOS: force-show main window after event loop starts (boot overlay may not display on macOS)
+    if sys.platform == "darwin":
+        QTimer.singleShot(1000, lambda: ui.show_main())
 
     # Start Brahma Passive Sensorium Engine (v2)
     try:

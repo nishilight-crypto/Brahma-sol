@@ -10019,7 +10019,8 @@ class MainWindow(QMainWindow):
         self.setWindowFlag(Qt.WindowType.Tool, False)
         self.setWindowFlag(Qt.WindowType.Window, True)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        if sys.platform != "darwin":
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setWindowIcon(self._make_window_icon())
         self.setWindowTitle("Brahma Sol")
         self.setMinimumSize(_MIN_W, _MIN_H)
