@@ -11,6 +11,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+from core.mac_compat import get_app_data_dir
 
 def execute(**kwargs):
     """
@@ -18,7 +19,7 @@ def execute(**kwargs):
     on the Brahma Evo HUD screen.
     """
     try:
-        output_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'BrahmaAI', 'deliverables')
+        output_dir = os.path.join(get_app_data_dir(), 'deliverables')
         os.makedirs(output_dir, exist_ok=True)
         image_path = os.path.join(output_dir, 'headphones_image.png')
 

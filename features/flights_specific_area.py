@@ -15,6 +15,7 @@ import urllib.request
 import urllib.parse
 import json
 import os
+from core.mac_compat import get_app_data_dir
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -123,8 +124,8 @@ def execute(**kwargs):
         ax.grid(True, linestyle='--', alpha=0.3, color='#1E293B')
         ax.legend(facecolor='#0F172A', edgecolor='#334155', loc='upper right')
 
-        deliverables_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'BrahmaAI', 'deliverables')
-        os.makedirs(deliverables_dir, exist_ok=True)
+        output_dir = os.path.join(get_app_data_dir(), 'deliverables')
+        os.makedirs(output_dir, exist_ok=True)
         image_path = os.path.join(deliverables_dir, 'flights_radar_output.png')
         plt.savefig(image_path, bbox_inches='tight', dpi=140)
         plt.close(fig)

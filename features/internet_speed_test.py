@@ -31,6 +31,7 @@ def execute(**kwargs) -> Dict[str, Any]:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from core.mac_compat import get_app_data_dir
 
     download_speed = 0.0
     upload_speed = 0.0
@@ -98,7 +99,7 @@ def execute(**kwargs) -> Dict[str, Any]:
     ax.set_axisbelow(True)
 
     # Output directory
-    output_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "BrahmaAI", "deliverables")
+    output_dir = os.path.join(get_app_data_dir(), "deliverables")
     os.makedirs(output_dir, exist_ok=True)
     image_path = os.path.join(output_dir, "internet_speed_test.png")
     fig.tight_layout()

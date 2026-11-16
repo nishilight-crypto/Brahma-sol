@@ -853,3 +853,19 @@ def get_async_key_state(vk: int) -> bool:
         except Exception:
             return False
     return False
+
+
+# ── Cross-platform app data directory ───────────────────────────────────────
+
+def get_app_data_dir(app_name: str = "BrahmaAI") -> Path:
+    """Cross-platform app data directory.
+
+    Windows: %LOCALAPPDATA%\\BrahmaAI
+    macOS:   ~/Library/Application Support/BrahmaAI
+    Linux:   ~/.local/share/BrahmaAI
+    """
+    if IS_MAC:
+        return Path.home() / "Library" / "Application Support" / app_name
+    if IS_WIN:
+        return Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / app_name
+    return Path.home() / ".local" / "share" / app_name

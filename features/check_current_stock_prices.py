@@ -31,6 +31,7 @@ import datetime
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from core.mac_compat import get_app_data_dir
 
 def execute(**kwargs):
     symbol = kwargs.get('symbol')
@@ -106,7 +107,7 @@ def execute(**kwargs):
         fig.autofmt_xdate()
 
         # Create deliverables directory if it doesn't exist
-        deliverables_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'BrahmaAI', 'deliverables')
+        deliverables_dir = os.path.join(get_app_data_dir(), 'deliverables')
         os.makedirs(deliverables_dir, exist_ok=True)
 
         # Save the plot to a file

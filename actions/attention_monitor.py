@@ -5,6 +5,7 @@ import os
 import platform
 import re
 import sqlite3
+import sys
 import tempfile
 import threading
 import time
@@ -99,6 +100,8 @@ _WINDOW_CALL_HINTS = (
 
 
 def _db_path() -> Path:
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "BrahmaAI" / "wpndatabase.db"
     local = os.environ.get("LOCALAPPDATA", "")
     return Path(local) / "Microsoft" / "Windows" / "Notifications" / "wpndatabase.db"
 

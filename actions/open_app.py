@@ -126,6 +126,8 @@ def _launch_windows(app_name: str) -> bool:
             r"C:\Program Files\WindowsApps\WhatsApp.exe",
             shutil.which("whatsapp"),
             shutil.which("WhatsApp"),
+            # macOS
+            "/Applications/WhatsApp.app/Contents/MacOS/WhatsApp",
         ]
         for wp in wa_paths:
             if wp and os.path.exists(wp):
@@ -151,6 +153,8 @@ def _launch_windows(app_name: str) -> bool:
             os.path.expandvars(r"%LOCALAPPDATA%\Spotify\Spotify.exe"),
             r"C:\Program Files\Spotify\Spotify.exe",
             shutil.which("spotify"),
+            # macOS
+            "/Applications/Spotify.app/Contents/MacOS/Spotify",
         ]
         for sp in spotify_paths:
             if sp and os.path.exists(sp):

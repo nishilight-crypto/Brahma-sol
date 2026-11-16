@@ -18,6 +18,7 @@ from datetime import datetime
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from core.mac_compat import get_app_data_dir
 
 def execute(**kwargs):
     query = (kwargs.get('query') or kwargs.get('match_id') or kwargs.get('team') or '').lower().strip()
@@ -88,8 +89,7 @@ def execute(**kwargs):
         for spine in ax.spines.values():
             spine.set_color('#1E293B')
 
-        local_app_data = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
-        output_dir = os.path.join(local_app_data, 'BrahmaAI', 'deliverables')
+        output_dir = os.path.join(get_app_data_dir(), 'deliverables')
         os.makedirs(output_dir, exist_ok=True)
         image_path = os.path.join(output_dir, 'cricket_scores_output.png')
         plt.savefig(image_path, bbox_inches='tight', dpi=140)

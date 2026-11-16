@@ -9,6 +9,7 @@ FEATURE_METADATA = {'name': 'show_gif', 'aliases': ['display gif', 'show animati
 import os
 import math
 from PIL import Image, ImageDraw
+from core.mac_compat import get_app_data_dir
 
 def execute(**kwargs):
     """
@@ -27,7 +28,7 @@ def execute(**kwargs):
         query = query.get('query', 'laughing cat')
     query_clean = str(query).strip() or 'laughing cat'
 
-    output_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'BrahmaAI', 'deliverables')
+    output_dir = os.path.join(get_app_data_dir(), 'deliverables')
     os.makedirs(output_dir, exist_ok=True)
     gif_path = os.path.join(output_dir, 'show_gif_animation.gif')
 
