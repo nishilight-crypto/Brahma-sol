@@ -5,12 +5,17 @@ import json
 import time
 import subprocess
 import threading
-import winreg
 from pathlib import Path
 from datetime import datetime
 
+IS_WIN = os.name == "nt"
+if IS_WIN:
+    import winreg  # type: ignore[import-not-found]
+
 
 def _find_steam_path() -> Path | None:
+    if not IS_WIN:
+        return None
     registry_keys = [
         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Valve\Steam"),
         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Valve\Steam"),
@@ -37,6 +42,8 @@ def _find_steam_path() -> Path | None:
 
 
 def _find_epic_path() -> Path | None:
+    if not IS_WIN:
+        return None
     registry_keys = [
         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\EpicGames\EpicGamesLauncher"),
         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\EpicGames\EpicGamesLauncher"),
