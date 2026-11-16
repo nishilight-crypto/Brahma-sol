@@ -2462,9 +2462,9 @@ class GestureCameraPreview(QFrame):
             pyautogui.PAUSE = 0
 
             try:
-                import ctypes
-                screen_w = int(ctypes.windll.user32.GetSystemMetrics(0))
-                screen_h = int(ctypes.windll.user32.GetSystemMetrics(1))
+                from core.mac_compat import get_system_metrics
+                screen_w = int(get_system_metrics(0))
+                screen_h = int(get_system_metrics(1))
             except Exception:
                 screen_w, screen_h = pyautogui.size()
 

@@ -222,6 +222,9 @@ def _ensure_network_access(port: int) -> None:
         # ── ShellExecuteW: native UAC elevation (most reliable on Windows) ────
         # ShellExecuteW with verb "runas" always shows the UAC dialog regardless
         # of UAC level settings. Non-blocking — uvicorn is already running.
+        if sys.platform != "win32":
+            print("[Dashboard] Skipping Windows UAC elevation on non-Windows.")
+            return
         print("[Dashboard] One-time network setup required.")
         print("[Dashboard] >>> A Windows security dialog will appear — click 'Yes' <<<")
         try:
@@ -867,8 +870,8 @@ class DashboardServer:
                         pyautogui.press("volumemute")
                 elif act_type == "system":
                     if action == "lock":
-                        import ctypes
-                        ctypes.windll.user32.LockWorkStation()
+                        from core.mac_compat import lock_workstation
+                        lock_workstation()
                     elif action == "desktop":
                         pyautogui.hotkey("win", "d")
                     elif action == "screenshot":
@@ -1144,8 +1147,8 @@ class DashboardServer:
                         try:
                             import pyautogui
                             if action == "lock":
-                                import ctypes
-                                ctypes.windll.user32.LockWorkStation()
+                                from core.mac_compat import lock_workstation
+                                lock_workstation()
                             elif action == "desktop":
                                 pyautogui.hotkey("win", "d")
                             elif action == "screenshot":

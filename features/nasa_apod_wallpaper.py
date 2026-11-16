@@ -40,6 +40,10 @@ TOOL_MANIFEST = {
 
 def _set_windows_wallpaper(image_path: str) -> bool:
     """Sets the wallpaper using Windows SystemParametersInfo API."""
+    import sys
+    if sys.platform != "win32":
+        from core.mac_compat import set_wallpaper
+        return set_wallpaper(image_path)
     import ctypes
     try:
         # SPI_SETDESKWALLPAPER = 20, SPIF_UPDATEINIFILE = 1, SPIF_SENDCHANGE = 2
