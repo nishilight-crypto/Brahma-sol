@@ -62,7 +62,11 @@ class LocalBrain:
             shutil.which("ollama"),
             os.path.expandvars(r"%LOCALAPPDATA%\Programs\Ollama\ollama.exe"),
             os.path.expandvars(r"%PROGRAMFILES%\Ollama\ollama.exe"),
-            r"C:\Users\Suryaansh\AppData\Local\Programs\Ollama\ollama.exe"
+            r"C:\Users\Suryaansh\AppData\Local\Programs\Ollama\ollama.exe",
+            # macOS
+            "/usr/local/bin/ollama",
+            "/opt/homebrew/bin/ollama",
+            "/Applications/Ollama.app/Contents/MacOS/Ollama",
         ]
         ollama_bin = next((p for p in candidates if p and os.path.exists(p)), None)
         if ollama_bin:

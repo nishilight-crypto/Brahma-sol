@@ -139,9 +139,9 @@ class AutoUpdater:
 
     def _execute_windows_swap(self, installer_path: Path):
         """
-        Launches a detached batch script that waits for BrahmaSol to quit,
-        executes the installer in /SILENT mode into the install directory,
-        and relaunches BrahmaSol.
+        Launches a detached script that waits for Brahma Sol to quit,
+        executes the installer, and relaunches Brahma Sol.
+        Cross-platform: batch script on Windows, shell script on macOS/Linux.
         """
         current_exe = sys.executable
         if getattr(sys, 'frozen', False):
@@ -149,13 +149,48 @@ class AutoUpdater:
             target_exe = current_exe
         else:
             local_app = os.environ.get("LOCALAPPDATA", "")
+            if sys.platform == "darwin":
+                install_dir = Path.home() / "Library" / "Application Support" / "BrahmaSol"
+                target_exe = str(install_dir / "Brahma Sol.app" / "Contents" / "MacOS" / "Brahma Sol")
+            else:
+                install_dir = Path(local_app) / "Programs" / "BrahmaSol"
+                target_exe = str(install_dir / "BrahmaSol.exe")
+
+        pid = os.getpid()
+
+        if sys.platform == "darwin":
+            shell_script = installer_path.parent / "apply_update.sh"
+            script_content = f"""#!/bin/bash
+# Brahma Sol Updater — macOS
+echo "[BRAHMA SOL] Waiting for application to exit..."
+sleep 1
+
+while kill -0 {pid} 2>/dev/null; do
+    sleep 1
+done
+
+echo "[BRAHMA SOL] Installing update silently into: \"{install_dir}\"...
+open -W "{installer_path}"
+
+echo "[BRAHMA SOL] Relaunching Brahma Sol...
+open "{target_exe}"
+
+sleep 2
+rm -f "$0"
+exit 0
+"""
+            shell_script.write_text(script_content, encoding="utf-8")
+            shell_script.chmod(0o755)
+            flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS if os.name == "nt" else 0
+            subprocess.Popen(["/bin/bash", str(shell_script)], creationflags=flags)
+        else:
             install_dir = Path(local_app) / "Programs" / "BrahmaSol"
             target_exe = str(install_dir / "BrahmaSol.exe")
 
-        pid = os.getpid()
-        batch_script = installer_path.parent / "apply_update.bat"
+            pid = os.getpid()
+            batch_script = installer_path.parent / "apply_update.bat"
 
-        script_content = f"""@echo off
+            script_content = f"""@echo off
 setlocal enabledelayedexpansion
 title Brahma Sol Updater
 echo [BRAHMA SOL] Waiting for application to exit...
@@ -178,10 +213,10 @@ timeout /t 2 /nobreak > nul
 del "%~f0"
 exit
 """
-        batch_script.write_text(script_content, encoding="utf-8")
+            batch_script.write_text(script_content, encoding="utf-8")
 
-        flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS if os.name == "nt" else 0
-        subprocess.Popen(["cmd.exe", "/c", str(batch_script)], creationflags=flags)
+            flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS if os.name == "nt" else 0
+            subprocess.Popen(["cmd.exe", "/c", str(batch_script)], creationflags=flags)
 
         # Terminate current app cleanly and unconditionally (avoid thread SystemExit)
         time.sleep(0.5)
