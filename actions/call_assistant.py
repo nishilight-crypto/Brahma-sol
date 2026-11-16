@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import re
+import sys
 import threading
 import time
 import urllib.request
@@ -110,6 +111,16 @@ def _boost_system_audio_for_call() -> Optional[float]:
     """
     orig_mic_level = None
 
+    if sys.platform == "darwin":
+        try:
+            from core.mac_compat import get_input_volume, set_input_volume
+            orig_mic_level = get_input_volume()
+            set_input_volume(100)
+            return orig_mic_level
+        except Exception as e:
+            logger.debug(f"[CallAssistant] Mic boost notice: {e}")
+            return None
+
     try:
         from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
         mic_dev = AudioUtilities.GetMicrophone()
@@ -127,16 +138,24 @@ def _boost_system_audio_for_call() -> Optional[float]:
 
 def _restore_system_audio_after_call(orig_mic_level: Optional[float]) -> None:
     """Restores the user's personal microphone level after the call proxy finishes."""
-    if orig_mic_level is not None:
+    if orig_mic_level is None:
+        return
+    if sys.platform == "darwin":
         try:
-            from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-            mic_dev = AudioUtilities.GetMicrophone()
-            if mic_dev:
-                vol_obj = mic_dev.Activate(IAudioEndpointVolume._iid_, 7, None)
-                mic_ep = vol_obj.QueryInterface(IAudioEndpointVolume)
-                mic_ep.SetMasterVolumeLevelScalar(orig_mic_level, None)
+            from core.mac_compat import set_input_volume
+            set_input_volume(int(orig_mic_level))
         except Exception:
             pass
+        return
+    try:
+        from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+        mic_dev = AudioUtilities.GetMicrophone()
+        if mic_dev:
+            vol_obj = mic_dev.Activate(IAudioEndpointVolume._iid_, 7, None)
+            mic_ep = vol_obj.QueryInterface(IAudioEndpointVolume)
+            mic_ep.SetMasterVolumeLevelScalar(orig_mic_level, None)
+    except Exception:
+        pass
 
 
 class CallAssistant:

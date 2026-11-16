@@ -61,7 +61,11 @@ try:
         winsound.Beep(freq, 200)
         time.sleep(0.1)
 except Exception:
-    pass
+    try:
+        import subprocess
+        subprocess.run(["osascript", "-e", "beep"], capture_output=True)
+    except Exception:
+        pass
 
 try:
     from win10toast import ToastNotifier
@@ -76,7 +80,10 @@ except Exception:
         import subprocess
         subprocess.run(["msg", "*", "/TIME:30", "{safe_message}"], shell=True)
     except Exception:
-        pass
+        try:
+            subprocess.run(["osascript", "-e", f'display notification "{{safe_message}}" with title "MARK Reminder"'], capture_output=True)
+        except Exception:
+            pass
 
 time.sleep(3)
 try:

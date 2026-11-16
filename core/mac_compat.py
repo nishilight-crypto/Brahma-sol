@@ -126,6 +126,43 @@ def change_volume(delta: int) -> bool:
     return set_volume(cur + delta)
 
 
+# ── Input volume (microphone) ──────────────────────────────────────────────
+
+def get_input_volume() -> Optional[int]:
+    """Get microphone input volume (0-100). macOS uses osascript input volume."""
+    if IS_MAC:
+        v = _osa("input volume of (get volume settings)")
+        return int(v) if v.isdigit() else None
+    try:
+        from comtypes import CLSCTX_ALL  # type: ignore
+        from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume  # type: ignore
+        from ctypes import cast, POINTER
+        dev = AudioUtilities.GetMicrophone()
+        iface = dev.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        vol = cast(iface, POINTER(IAudioEndpointVolume))
+        return int(round(vol.GetMasterVolumeLevelScalar() * 100))
+    except Exception:
+        return None
+
+
+def set_input_volume(level: int) -> bool:
+    """Set microphone input volume (0-100). macOS uses osascript input volume."""
+    level = max(0, min(100, int(level)))
+    if IS_MAC:
+        _osa(f"set volume input volume {level}")
+        return True
+    try:
+        from comtypes import CLSCTX_ALL  # type: ignore
+        from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume  # type: ignore
+        from ctypes import cast, POINTER
+        dev = AudioUtilities.GetMicrophone()
+        iface = dev.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        cast(iface, POINTER(IAudioEndpointVolume)).SetMasterVolumeLevelScalar(level / 100, None)
+        return True
+    except Exception:
+        return False
+
+
 def set_mute(mute: bool = True) -> bool:
     if IS_MAC:
         _osa(f"set volume output muted {'true' if mute else 'false'}")
