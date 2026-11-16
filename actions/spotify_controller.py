@@ -64,6 +64,8 @@ def _get_chrome_path() -> str | None:
         shutil.which("chrome"),
         shutil.which("google-chrome"),
         shutil.which("google-chrome-stable"),
+        # macOS
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     ]
     for p in candidates:
         if p and os.path.exists(p):
@@ -79,6 +81,8 @@ def _get_spotify_app_path() -> str | None:
         os.path.expandvars(r"%LOCALAPPDATA%\Spotify\Spotify.exe"),
         r"C:\Program Files\Spotify\Spotify.exe",
         shutil.which("spotify"),
+        # macOS
+        "/Applications/Spotify.app/Contents/MacOS/Spotify",
     ]
     for p in candidates:
         if p and os.path.exists(p):
@@ -388,6 +392,13 @@ def _free_port_8888_if_busy() -> None:
                     if len(parts) >= 5:
                         pid = parts[-1]
                         subprocess.run(f"taskkill /F /PID {pid}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+    elif sys.platform == "darwin":
+        try:
+            out = subprocess.check_output("lsof -ti:8888", shell=True, text=True, stderr=subprocess.DEVNULL)
+            for pid in out.strip().splitlines():
+                subprocess.run(["kill", "-9", pid], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             pass
 

@@ -56,6 +56,10 @@ class OllamaManager:
             Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Ollama" / "ollama.exe",
             Path(os.environ.get("ProgramFiles", "")) / "Ollama" / "ollama.exe",
             Path(os.environ.get("ProgramFiles(x86)", "")) / "Ollama" / "ollama.exe",
+            # macOS
+            Path("/usr/local/bin/ollama"),
+            Path("/opt/homebrew/bin/ollama"),
+            Path("/Applications/Ollama.app/Contents/MacOS/Ollama"),
         ]
         for c in candidates:
             if c.exists():

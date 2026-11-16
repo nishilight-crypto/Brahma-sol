@@ -256,6 +256,12 @@ class SpaceCleanerEngine:
             except Exception as e:
                 logger.error(f"Failed to launch ms-settings:storagesense: {e}")
                 return False
+        if sys.platform == "darwin":
+            try:
+                subprocess.Popen(["open", "x-apple.systempreferences:com.apple.settings.Storage"])
+                return True
+            except Exception:
+                pass
         return False
 
     # =========================================================================

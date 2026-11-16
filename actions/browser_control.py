@@ -120,6 +120,8 @@ def _find_browser_executable(prog_id: str) -> tuple:
         shutil.which("chrome"),
         shutil.which("google-chrome"),
         shutil.which("google-chrome-stable"),
+        # macOS
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" if system == "Darwin" else None,
     ]
     for c in chrome_candidates:
         if c and os.path.exists(c):
