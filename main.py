@@ -5472,12 +5472,19 @@ class BrahmaLive:
 
         # Fallback to offline male voice if Kokoro unavailable
         def _speak_thread():
+            self.set_speaking(True)
             try:
-                self.set_speaking(True)
                 from actions.attention_monitor import _speak_sapi_male
                 _speak_sapi_male(text)
             except Exception as exc:
-                print(f"[Brahma Speak] Fallback male speech notice: {exc}")
+                print(f"[Brahma Speak] SAPI fallback notice: {exc}")
+                # macOS native say command fallback
+                if sys.platform == "darwin":
+                    try:
+                        from core.mac_compat import say
+                        say(text)
+                    except Exception as exc2:
+                        print(f"[Brahma Speak] macOS say fallback notice: {exc2}")
             finally:
                 self.set_speaking(False)
 
